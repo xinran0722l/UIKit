@@ -19,6 +19,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
     }
     var landlords: [Landlord] = []
+    private let welcomeLabel = UILabel()
+    private let logoutButton = UIButton()
     
     private let tableView: UITableView = {
         let table = UITableView()
@@ -28,29 +30,74 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .white
         if container == nil {
             self.container = AppDelegate.sharedAppDelegate.coreDataStack
         }
         
-        print("MainViewController loaded")
+        //print("MainViewController loaded")
         //view.backgroundColor = .white
+        setupLogout()
         setupTableView()
-        print("loaded")
         demo.getData { [weak self] fetchedLandlords in
-            print("getData closure called with \(fetchedLandlords.count) landlords")
+            //print("getData closure called with \(fetchedLandlords.count) landlords")
             DispatchQueue.main.async {
                 self?.landlords = fetchedLandlords
-                // print("Loaded landlords: \(fetchedLandlords.count)")
                 self?.tableView.reloadData()
             }
         }
     }
+    
+    private func setupLogout() {
+        // Welcome Label
+        welcomeLabel.text = "Welcome, Bob!"
+        welcomeLabel.textAlignment = .center
+        view.addSubview(welcomeLabel)
         
+        // Logout Button
+        logoutButton.setTitle("LOGOUT", for: .normal)
+        logoutButton.backgroundColor = .blue
+        logoutButton.addTarget(self, action: #selector(handleLogout), for: .touchUpInside)
+        view.addSubview(logoutButton)
+        
+        // Auto Layout constraints
+        welcomeLabel.translatesAutoresizingMaskIntoConstraints = false
+        logoutButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            // Align the welcomeLabel to the top with some padding
+            welcomeLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            welcomeLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            welcomeLabel.trailingAnchor.constraint(equalTo: logoutButton.leadingAnchor, constant: -10), // Space between label and button
+            
+            // Align the logoutButton to the top right
+            logoutButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            logoutButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+        ])
+    }
 
+    @objc func handleLogout() {
+        UserDefaults.standard.set(false, forKey: "isLoggedIn")
+        guard let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate else {
+            return
+        }
+        let loginVC = LoginViewController()
+        sceneDelegate.window?.rootViewController = loginVC
+        sceneDelegate.window?.makeKeyAndVisible()
+    }
+    
     private func setupTableView() {
         view.addSubview(tableView)
         tableView.backgroundColor = .systemPurple
-        tableView.frame = view.bounds
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            // Adjust top constraint
+            tableView.topAnchor.constraint(equalTo: logoutButton.bottomAnchor, constant: 20),
+            tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+        ])
+        
         tableView.delegate = self
         tableView.dataSource = self
     }
@@ -68,9 +115,22 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         return apartments.count
     }
 
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        let landlord = landlords[section]
-        return "Landlord: \(landlord.firstName ?? "") \(landlord.lastName ?? "")"
+//    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+//        let landlord = landlords[section]
+//        return "Landlord: \(landlord.firstName ?? "") \(landlord.lastName ?? "")"
+//    }
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UIView()
+        headerView.backgroundColor = UIColor.systemPurple
+
+        let headerLabel = UILabel(frame: CGRect(x: 16, y: 0, width: tableView.bounds.size.width, height: 30))
+        headerLabel.text = "Landlord: \(landlords[section].firstName ?? "") \(landlords[section].lastName ?? "")"
+        headerLabel.textColor = UIColor.white
+        headerLabel.backgroundColor = UIColor.clear
+
+        headerView.addSubview(headerLabel)
+
+        return headerView
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -83,7 +143,11 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         }
         return cell
     }
-
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 30.0 // Adjust as needed to create space between sections
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         // Optionally, handle cell selection if needed
