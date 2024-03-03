@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22522" systemVersion="23B92" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="Apartment" representedClassName="Apartment" syncable="YES" codeGenerationType="class">
+        <attribute name="monthlyRent" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="numRooms" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="unitNumber" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="houses" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Tenant" inverseName="leases" inverseEntity="Tenant"/>
+        <relationship name="ownedBy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Landlord" inverseName="owns" inverseEntity="Landlord"/>
+    </entity>
+    <entity name="Landlord" representedClassName="Landlord" syncable="YES" codeGenerationType="class">
+        <attribute name="firstName" optional="YES" attributeType="String"/>
+        <attribute name="lastName" optional="YES" attributeType="String"/>
+        <attribute name="propertyOwnershipId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="rentalIncome" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <relationship name="owns" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Apartment" inverseName="ownedBy" inverseEntity="Apartment"/>
+    </entity>
+    <entity name="Tenant" representedClassName="Tenant" syncable="YES" codeGenerationType="class">
+        <attribute name="firstName" optional="YES" attributeType="String"/>
+        <attribute name="lastName" optional="YES" attributeType="String"/>
+        <attribute name="leaseTermLength" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="rentersInsuranceId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <relationship name="leases" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Apartment" inverseName="houses" inverseEntity="Apartment"/>
+    </entity>
+</model>
